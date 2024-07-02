@@ -68,11 +68,11 @@ class HomeController extends Controller
         $employees_under = auth()->user()->subbordinates;
         // dd(auth()->user()->employee);
         $attendance_employees = $attendance_controller->get_attendances_employees(date('Y-m-d'),date('Y-m-d'),$employees_under->pluck('employee_number')->toArray());
-   
+        $attendance_employees->load('employee.approved_leaves_with_pay');
         // dd($attendance_employees);
         $announcements = Announcement::with('user')->where('expired',null)
         ->orWhere('expired',">=",date('Y-m-d'))->get();
-      
+        
 
         $holidays = Holiday::where('status','Permanent')
         ->whereMonth('holiday_date',date('m'))

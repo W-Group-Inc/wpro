@@ -181,6 +181,7 @@ class UserController extends Controller
                 $user_privilege->biometrics_sync = $request->biometrics_sync;
                 $user_privilege->timekeeping_dashboard = $request->timekeeping_dashboard;
                 $user_privilege->upload_daily_schedule = $request->upload_daily_schedule;
+                $user_privilege->allow_prob = $request->allow_prob;
 
                 $user_privilege->settings_view = $request->settings_view;
                 $user_privilege->settings_add = $request->settings_add;
@@ -224,6 +225,7 @@ class UserController extends Controller
                 $new_user_privilege->biometrics_sync = $request->biometrics_sync;
                 $new_user_privilege->timekeeping_dashboard = $request->timekeeping_dashboard;
                 $new_user_privilege->upload_daily_schedule = $request->upload_daily_schedule;
+                $new_user_privilege->allow_prob = $request->allow_prob;
 
                 $new_user_privilege->settings_view = $request->settings_view;
                 $new_user_privilege->settings_add = $request->settings_add;

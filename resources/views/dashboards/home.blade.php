@@ -88,9 +88,28 @@
                                       @php
                                           // dd($attendance_employees);
                                           $time_in = $attendance_employees->where('employee_code',$emp->employee_number)->where('time_in','!=',null)->first();
+                                          $leave_with_pay = $emp ? $emp->approved_leaves_with_pay->where('date_from', date('Y-m-d'))->first() : null;
                                       @endphp
-                                      <td>@if($time_in){{date('h:i A',strtotime($time_in->time_in))}}@endif</td>
-                                      <td>@if($time_in) @if($time_in->time_out){{date('h:i a',strtotime($time_in->time_out))}} @endif @endif</td>
+                                      <td>
+                                        @if($leave_with_pay)
+                                            Leave-With-Pay
+                                        @elseif($time_in && $time_in->time_in)
+                                            {{ date('h:i A', strtotime($time_in->time_in)) }}
+                                        @else
+                                            Absent
+                                        @endif
+                                      </td>
+                                      <td>
+                                        @if($time_in)
+                                            @if($time_in->time_out)
+                                                {{ date('h:i a', strtotime($time_in->time_out)) }}
+                                            @else
+                                                Absent
+                                            @endif
+                                        @else
+                                            Absent
+                                        @endif
+                                    </td>                                    
                                     </tr>
                                     @endforeach
                     
