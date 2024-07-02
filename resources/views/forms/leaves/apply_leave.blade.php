@@ -226,8 +226,8 @@
     $("#leave_type").on('change', function() {
       if ($(this).val() == 1) {
 
-        $("[name='date_from']").attr('min', "{{date('Y-m-d', strtotime('+3 weekday'))}}");
-        $("[name='date_to']").attr('min', "{{date('Y-m-d', strtotime('+3 weekday'))}}");
+        $("[name='date_from']").attr('min', "{{date('Y-m-d', strtotime('+3 days'))}}");
+        $("[name='date_to']").attr('min', "{{date('Y-m-d', strtotime('+3 days'))}}");
 
         $("[name='date_from']").removeAttr('max');
         $("[name='date_to']").removeAttr('max');
