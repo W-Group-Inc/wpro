@@ -16,6 +16,7 @@ use App\EmployeeWfh;
 use App\EmployeeOb;
 use App\EmployeeDtr;
 use App\Tax;
+use Carbon\Carbon;
 
 function employee_name($employee_names,$employee_number){
     foreach($employee_names as $item){
@@ -320,48 +321,44 @@ function checkUserAllowedOvertime($user_id){
     }
 }
 
-function checkUsedSLVLSILLeave($user_id,$leave_type,$date_hired){
-
+function checkUsedSLVLSILLeave($user_id, $leave_type, $date_hired)
+{
     $count = 0;
-    if($date_hired){
-        $today  = date('Y-m-d');
-        $date_hired_md = date('m-d',strtotime($date_hired));
-        $date_hired_m = date('m',strtotime($date_hired));
-        $last_year = date('Y', strtotime('-1 year', strtotime($today)) );
-        $this_year = date('Y');
+    if ($date_hired) {
+        $today = Carbon::today();
+        $date_hired_md = Carbon::parse($date_hired)->format('m-d');
+        $last_year = $today->copy()->subYear()->format('Y');
+        $this_year = $today->format('Y');
 
-        $date_hired_this_year = $this_year . '-'. $date_hired_md;
+        $date_hired_this_year = Carbon::parse($this_year . '-' . $date_hired_md);
 
-        if($today > $date_hired_this_year  ){
-            $filter_date_leave = $this_year . '-'. $date_hired_md;
-        }else{
-            $filter_date_leave = $last_year . '-'. $date_hired_md;
-        }
-        $employee_vl = EmployeeLeave::where('user_id',$user_id)
-                                        ->where('leave_type',$leave_type)
-                                        ->where('status','Approved')
-                                        // ->where('date_from','>',$filter_date_leave)
-                                        ->get();
-        
-        $date_today = date('Y-m-d');
-        if($employee_vl){
-            foreach($employee_vl as $leave){
-                if($leave->withpay == 1 && $leave->halfday == 1){
-                    if(date('Y-m-d',strtotime($leave->date_from)) <= $date_today){
+        $filter_date_leave = $today->greaterThan($date_hired_this_year)
+            ? $date_hired_this_year
+            : Carbon::parse($last_year . '-' . $date_hired_md);
+
+        $employee_vl = EmployeeLeave::where('user_id', $user_id)
+            ->where('leave_type', $leave_type)
+            ->where('status', 'Approved')
+            ->get();
+
+        foreach ($employee_vl as $leave) {
+            $leave_date_from = Carbon::parse($leave->date_from);
+            $leave_date_to = Carbon::parse($leave->date_to);
+
+            if ($leave->withpay == 1) {
+                if ($leave->halfday == 1) {
+                    if ($leave_date_from->lessThanOrEqualTo($today)) {
                         $count += 0.5;
                     }
-                }else{
-                    $date_range = dateRangeHelper($leave->date_from,$leave->date_to);
-                    if($date_range){
-                        foreach($date_range as $date_r){
-                            $leave_Date = date('Y-m-d', strtotime($date_r));
-                            if($leave->withpay == 1 && $leave_Date <= $date_today){
-                                $count += 1;
-                            }
+                } else {
+                    $date_range = $leave_date_from->copy();
+                    while ($date_range->lessThanOrEqualTo($leave_date_to)) {
+                        if ($date_range->lessThanOrEqualTo($today)) {
+                            $count++;
                         }
+                        $date_range->addDay();
                     }
                 }
-                
             }
         }
     }

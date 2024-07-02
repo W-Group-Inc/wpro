@@ -44,15 +44,15 @@ class EmployeeLeaveController extends Controller
 
         
         $leave_types = Leave::all(); //masterfile
-        $employee_leaves = EmployeeLeave::with('user','leave','schedule')
+        $employee_leaves = EmployeeLeave::with('user','leave','schedule', 'dailySchedules')
                                             ->where('user_id',auth()->user()->id)
                                             ->where('status',$status)
                                             ->whereDate('created_at','>=',$from)
                                             ->whereDate('created_at','<=',$to)
                                             ->orderBy('created_at','DESC')
                                             ->get();
-
-        $employee_leaves_all = EmployeeLeave::with('user','leave','schedule')
+        // dd($employee_leaves);
+        $employee_leaves_all = EmployeeLeave::with('user','leave','schedule', 'dailySchedules')
                                             ->where('user_id',auth()->user()->id)
                                             ->get();
 

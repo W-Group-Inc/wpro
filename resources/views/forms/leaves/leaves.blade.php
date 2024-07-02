@@ -556,7 +556,8 @@
                             {{ $employee_leave->reason }}
                           </p>
                         </td>
-                        <td>{{get_count_days($employee_leave->schedule,$employee_leave->date_from,$employee_leave->date_to,$employee_leave->halfday)}}</td>
+                        <td>{{ get_count_days($employee_leave->dailySchedules, $employee_leave->schedule, $employee_leave->date_from, $employee_leave->date_to, $employee_leave->halfday) }}</td>
+
                         <td id="tdStatus{{ $employee_leave->id }}">
                           @if ($employee_leave->status == 'Pending')
                             <label class="badge badge-warning  mt-1">{{ $employee_leave->status }}</label>
@@ -611,35 +612,55 @@
     </div>
 </div>
 
-
 @php
-function get_count_days($data,$date_from,$date_to,$halfday)
- {
+use Carbon\Carbon;
 
-    if($date_from == $date_to){
+function get_count_days($dailySchedules, $scheduleDatas, $date_from, $date_to, $halfday)
+{
+    $date_from = Carbon::parse($date_from);
+    $date_to = Carbon::parse($date_to);
+
+    if ($date_from->equalTo($date_to)) {
+        // Single-day period
         $count = 1;
-    }else{
-      $data = ($data->pluck('name'))->toArray();
-      $count = 0;
-      $startTime = strtotime($date_from);
-      $endTime = strtotime($date_to);
+    } else {
+        // Initialize count
+        $count = 0;
+        
+        foreach ($dailySchedules as $schedule) {
+          $log_date = Carbon::parse($schedule->log_date); // Parse log_date to Carbon instance
 
-      for ( $i = $startTime; $i <= $endTime; $i = $i + 86400 ) {
-        $thisDate = date( 'l', $i ); // 2010-05-01, 2010-05-02, etc
-        if(in_array($thisDate,$data)){
-            $count= $count+1;
+          if ($log_date->between(Carbon::parse($date_from), Carbon::parse($date_to))) {
+            $count++;
+          }
         }
-      }
+
+        // If no entries found with non-empty time_in_from, count based on scheduleDatas
+        if ($count === 0) {
+            $data = $scheduleDatas->pluck('name')->toArray();
+            $startTime = strtotime($date_from);
+            $endTime = strtotime($date_to);
+
+            for ($i = $startTime; $i <= $endTime; $i += 86400) {
+                $thisDate = Carbon::createFromTimestamp($i)->format('l'); // Get the day name
+                if (in_array($thisDate, $data)) {
+                    $count++;
+                }
+            }
+        }
     }
 
-    if($count == 1 && $halfday == 1){
-      return '0.5';
-    }else{
-      return($count);
+    // Adjust count for half-day if applicable
+    if ($count == 1 && $halfday == 1) {
+        return '0.5';
+    } else {
+        return $count;
     }
-    
- } 
-@endphp  
+}
+@endphp
+
+
+ 
 
 @include('forms.leaves.apply_leave') 
 

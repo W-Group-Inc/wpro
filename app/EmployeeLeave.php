@@ -34,5 +34,10 @@ class EmployeeLeave extends Model implements Auditable
     public function approver()
     {
         return $this->hasMany(EmployeeApprover::class,'user_id','user_id');
-    }       
+    }   
+    
+    public function dailySchedules()
+    {
+        return $this->hasManyThrough(DailySchedule::class, Employee::class, 'user_id', 'employee_number', 'user_id', 'employee_number');
+    }
 }
