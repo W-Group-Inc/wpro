@@ -2622,4 +2622,11 @@ class EmployeeController extends Controller
             )
         );
     }
+    
+    public function resigned()
+    {
+        $employee = Employee::where('status', 'Resigned')->get();
+
+        return response()->json($employee);
+    }
 }
