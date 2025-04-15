@@ -24,6 +24,9 @@ class PerfectAttendanceController extends Controller
         $companies = Company::whereIn('id', $allowed_companies)->get();
 
         $attendances = AttendanceDetailedReport::select('company_id', 'employee_no', 'name')
+            ->whereHas('employee', function($query){
+                $query->where('classification', 2); // Regular Employee Only
+            })
             ->whereYear('log_date', date('Y', strtotime($month)))
             ->whereMonth('log_date', date('m', strtotime($month)))
             ->where('company_id', $company_id)
